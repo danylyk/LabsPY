@@ -55,6 +55,32 @@ def GetPower (car):
 
 #ISP
 
+#class IShape:
+#    def DrawCircle(self):
+#        pass
+#    def DrawTriangle(self):
+#        pass
+#
+#class Circle(IShape):
+#    def DrawCircle(self):
+#        #code
+#        pass
+#    def DrawTriangle(self): Circle is not a triangle
+#        pass
+#
+#class Triangle(ITriangle):
+#    def DrawCircle(self): Triangle is not a circle
+#        pass
+#    def DrawTriangle(self):
+#        #code
+#        pass
+
+
+class Triangle(ITriangle):
+    def DrawTriangle(self):
+        #code
+        pass
+
 class ICircle:
     def DrawCircle(self):
         pass
@@ -77,14 +103,26 @@ class Triangle(ITriangle):
 
 #DIP
 
-class IConnection:
+class Idb:
     def Connect (self):
         pass
 
-class MySQLConnect(IConnection):
+class MySQLDB(Idb):
+    def Connect(self):
+        pass
+
+class MongoDB(Idb):
     def Connect(self):
         pass
 
 class Books:
-    def __init__ (self, connection: IConnection):
-        pass
+    def __init__ (self, db: Idb):
+        self.db = db
+
+    def GetBooks (self):
+        conn = self.db.Connect()
+
+mysql = MySQLDB()
+mongo = MongoDB()
+b1 = Books(mysql).GetBooks()
+b2 = Books(mongo).GetBooks()
