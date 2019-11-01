@@ -1,3 +1,5 @@
+import mysql.connector
+
 #SRP
 
 class Person:
@@ -8,18 +10,44 @@ class Person:
         print("Hello, my name is " + self.name)
 
     #def Save (self):
-    #    print("Saved")
+    #    con = mysql.connector.connect(
+    #        host = "localhost",
+    #        user = "root",
+    #        password = "",
+    #        database = "mydb",
+    #        port = 3306
+    #    )
+    #    cur = con.cursor()
+    #    cur.execute("INSERT INTO persons (ID, NAME) VALUES (NULL, %s)", (self.name))
+    #    con.commit()
+    #    cur.close()
+    #    con.close()
 
 class DB:
-    def Save (self, person: Person):
-        print(str(person.name) + " saved")
+    def __init__ (self):
+        self.con = mysql.connector.connect(
+            host = "localhost",
+            user = "root",
+            password = "",
+            database = "mydb",
+            port = 3306
+        )
+
+    def SavePerson (self, person: Person):
+        cur = con.cursor()
+        cur.execute("INSERT INTO persons (ID, NAME) VALUES (NULL, %s)", (person.name))
+        self.con.commit()
+        cur.close()
+
+    def __exit__ (self):
+        self.con.close()
 
 if __name__ == "__main__":
     db = DB()
     ivan = Person("Ivan")
     julia = Person("Julia")
-    db.Save(ivan)
-    db.Save(julia)
+    db.SavePerson(ivan)
+    db.SavePerson(julia)
 
     print("---")
 
