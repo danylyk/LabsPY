@@ -1,45 +1,29 @@
-import dependency_injector.containers as containers
-import dependency_injector.providers as providers
-
-class Idb:
-    def Connect (self):
+class Database:
+    def connect (self):
         pass
 
-class MySQLDB(Idb):
-    def Connect(self):
-        print("MySQL DB is connected")
+class DatabaseMYSQL(Database):
+    def connect(self):
+        return "MySQL"
 
-class MongoDB(Idb):
-    def Connect(self):
-        print("MongoDB is connected")
+class DatabaseMONGO(Database):
+    def connect(self):
+        return "MongoDB"
 
 class Books:
-    def __init__ (self, db: Idb):
-        self.db = db
+    def __init__ (self, database: Database):
+        self.database = database
 
-    def GetBooks (self):
-        conn = self.db.Connect()
-        print("List of books")
+    def get_books (self):
+        conn = self.database.connect()
+        print("List of books from " + conn)
 
-
-"""the creation of a Books requires additional code to specificaty its dependencies"""
 if __name__ == "__main__":
-    mysql = MySQLDB()
-    mongo = MongoDB()
-    b1 = Books(mysql).GetBooks()
-    b2 = Books(mongo).GetBooks()
+    mysql = DatabaseMYSQL()
+    mongo = DatabaseMONGO()
 
+    books_mysql = Books(mysql)
+    books_mongo = Books(mongo)
 
-"""So, we can make in other way"""
-
-class DataBases(containers.DeclarativeContainer):
-    mysql = providers.Factory(MySQLDB)
-    mongo = providers.Factory(MongoDB)
-
-class CBooks(containers.DeclarativeContainer):
-    mysql = providers.Factory(Books, db=DataBases.mysql)
-    mongo = providers.Factory(Books, db=DataBases.mongo)
-
-if __name__ == '__main__':
-    books_mysql = CBooks.mysql()
-    books_mongo = CBooks.mongo()
+    books_1 = books_mysql.get_books()
+    books_2 = books_mongo.get_books()
