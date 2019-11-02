@@ -38,8 +38,11 @@ class Database:
         cur.execute("INSERT INTO persons (ID, NAME) VALUES (NULL, %s)", (person.name))
         self.con.commit()
         cur.close()
+    
+    def __enter__(self):
+        return self
 
-    def __exit__(self):
+    def __exit__(self, type, value, traceback):
         self.con.close()
 
 if __name__ == "__main__":
