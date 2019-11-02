@@ -6,15 +6,15 @@ class Person:
     def __init__(self, name: str):
         self.name = name
 
-    def Greeting (self):
+    def greeting(self):
         print("Hello, my name is " + self.name)
 
-    #def Save (self):
+    #def save(self):
     #    con = mysql.connector.connect(
     #        host = "localhost",
     #        user = "root",
     #        password = "",
-    #        database = "mydb",
+    #        database = "myDatabase",
     #        port = 3306
     #    )
     #    cur = con.cursor()
@@ -23,58 +23,60 @@ class Person:
     #    cur.close()
     #    con.close()
 
-class DB:
-    def __init__ (self):
+class Database:
+    def __init__(self):
         self.con = mysql.connector.connect(
             host = "localhost",
             user = "root",
             password = "",
-            database = "mydb",
+            database = "database",
             port = 3306
         )
 
-    def SavePerson (self, person: Person):
+    def save_person(self, person: Person):
         cur = con.cursor()
         cur.execute("INSERT INTO persons (ID, NAME) VALUES (NULL, %s)", (person.name))
         self.con.commit()
         cur.close()
 
-    def __exit__ (self):
+    def __exit__(self):
         self.con.close()
 
 if __name__ == "__main__":
-    db = DB()
-    ivan = Person("Ivan")
-    julia = Person("Julia")
-    db.SavePerson(ivan)
-    db.SavePerson(julia)
+    with Database() as database: #Here is __init__ was invoked
+        ivan = Person("Ivan")
+        julia = Person("Julia")
+        database.save_person(ivan)
+        database.save_person(julia)
 
-    print("---")
+        print("---")
+
+        #Here is __exit__ was invoked
 
 
 #OCP
 
 class IArea:
-    def Area (self):
+    def area(self):
         pass
 
 class Square(IArea):
-    def __init__ (self, width):
+    def __init__(self, width):
         self.width = width
-    def Area(self):
+    def area(self):
         return self.width**2
 
 class Circle(IArea):
     def __init__(self, radius):
         self.radius = radius
-    def Area(self):
+    def area(self):
         return 3.14*self.radius**2
 
 if __name__ == "__main__":
     square = Square(10)
     circle = Circle(10)
-    print(square.Area())
-    print(circle.Area())
+    print(square.area())
+    print(circle.area())
 
     print("---")
 
@@ -82,25 +84,25 @@ if __name__ == "__main__":
 #LSP
 
 class Auto:
-    def Power(self):
+    def power(self):
         pass
 
 class Lexus(Auto):
-    def Power(self):
+    def power(self):
         return 300
 
 class Dodge(Auto):
-    def Power(self):
+    def power(self):
         return 160
 
-def GetPower (car: Auto):
-    return car.Power()
+def get_power(car: Auto):
+    return car.power()
 
 if __name__ == "__main__":
-    car1 = Lexus()
-    car2 = Dodge()
-    print(GetPower(car1))
-    print(GetPower(car2))
+    car_1 = Lexus()
+    car_2 = Dodge()
+    print(get_power(car_1))
+    print(get_power(car_2))
 
     print("---")
 
@@ -108,77 +110,76 @@ if __name__ == "__main__":
 #ISP
 
 #class IShape:
-#    def DrawCircle(self):
-#        pass
-#    def DrawTriangle(self):
-#        pass
+#    def draw_circle(self):
+#      pass
+#    def draw_triangle(self):
+#      pass
 #
 #class Circle(IShape):
-#    def DrawCircle(self):
-#        #code
-#        pass
-#    def DrawTriangle(self): Circle is not a triangle
-#        pass
+#    def draw_circle(self):
+#      #code
+#      pass
+#    def draw_triangle(self): Circle is not a triangle
+#      pass
 #
 #class Triangle(ITriangle):
-#    def DrawCircle(self): Triangle is not a circle
-#        pass
-#    def DrawTriangle(self):
-#        #code
-#        pass
+#    def draw_circle(self): Triangle is not a circle
+#      pass
+#    def draw_triangle(self):
+#      #code
+#      pass
 
 class ICircle:
-    def DrawCircle(self):
+    def draw_circle(self):
         pass
 
 class ITriangle:
-    def DrawTriangle(self):
+    def draw_triangle(self):
         pass
 
 class Circle(ICircle):
-    def DrawCircle(self):
+    def draw_circle(self):
         print("Draw Circle")
         pass
 
 class Triangle(ITriangle):
-    def DrawTriangle(self):
+    def draw_triangle(self):
         print("Draw Triangle")
         pass
 
 if __name__ == "__main__":
     circle = Circle()
     triangle = Triangle()
-    circle.DrawCircle()
-    triangle.DrawTriangle()
+    circle.draw_circle()
+    triangle.draw_triangle()
 
     print("---")
 
 
-
 #DIP
 
-class Idb:
-    def Connect (self):
-        pass
+class IDatabase:
+    def connect(self):
+      pass
 
-class MySQLDB(Idb):
-    def Connect(self):
-        print("MySQL DB is connected")
+class MySQLDatabase(IDatabase):
+    def connect(self):
+      print("MySQL Database is connected")
 
-class MongoDB(Idb):
-    def Connect(self):
-        print("MongoDB is connected")
+class MongoDatabase(IDatabase):
+    def connect(self):
+      print("MongoDatabase is connected")
 
 class Books:
-    def __init__ (self, db: Idb):
-        self.db = db
+    def __init__(self, database: IDatabase):
+      self.database = database
 
-    def GetBooks (self):
-        conn = self.db.Connect()
-        print("List of books")
+    def get_books(self):
+      conn = self.database.connect()
+      print("List of books")
 
 if __name__ == "__main__":
-    mysql = MySQLDB()
-    mongo = MongoDB()
-    b1 = Books(mysql).GetBooks()
-    b2 = Books(mongo).GetBooks()
+    mysql = MySQLDatabase()
+    mongo = MongoDatabase()
+    b1 = Books(mysql).get_books()
+    b2 = Books(mongo).get_books()
