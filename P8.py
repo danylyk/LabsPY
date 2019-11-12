@@ -31,5 +31,6 @@ class Directory:
             files.pop(i)
         return res
 
-dir = Directory("C:/Users/webvi/OneDrive/Робочий стіл/P8/")
-print(dir.get_duplicates())
+if __name__ == '__main__':
+    dir = Directory("C:/Users/webvi/OneDrive/Робочий стіл/P8/")
+    print(dir.get_duplicates())
