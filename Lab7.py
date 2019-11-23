@@ -5,21 +5,11 @@ def GetWordsCount (url:str):
   #res = urllib.request.urlretrieve(url, 'File.txt') 
   data = urllib.request.urlopen(url)
   data = data.read().decode("utf-8").lower().replace("\'", "")
-  data = re.findall('(\w+(?:-\w+)+|\w+)', data)
-  res = [[data[0], 1]]
-  for i in range(len(data)):
-    new = True
-    for j in range(len(res)):
-      if res[j][0] == data[i]:
-        res[j][1] += 1
-        new = False
-        break
-    if new:
-      res.append([data[i], 1])
-
-  return res
+  a = re.search('(\w+(?:-\w+)+|\w+)', data)
+  while a:
+      print(a.group(0) + ": " + str(len(re.findall(r'\b'+a.group(0)+r'\b', data))))
+      data = re.sub(r'\b'+a.group(0)+r'\b', '', data)
+      a = re.search('(\w+(?:-\w+)+|\w+)', data)
 
 if __name__ == "__main__":
-  words = GetWordsCount("https://www.sample-videos.com/text/Sample-text-file-100kb.txt")
-  for item in words:
-    print(item[0]+": "+str(item[1])) 
+  words = GetWordsCount("https://raw.githubusercontent.com/dscape/spell/master/test/resources/big.txt")
