@@ -7,9 +7,12 @@ def GetWordsCount (url:str):
   data = data.read().decode("utf-8").lower().replace("\'", "")
   a = re.search('(\w+(?:-\w+)+|\w+)', data)
   while a:
-      print(a.group(0) + ": " + str(len(re.findall(r'\b'+a.group(0)+r'\b', data))))
+      yield [a.group(0), len(re.findall(r'\b'+a.group(0)+r'\b', data))]
+      #print(a.group(0) + ": " + str(len(re.findall(r'\b'+a.group(0)+r'\b', data))))
       data = re.sub(r'\b'+a.group(0)+r'\b', '', data)
       a = re.search('(\w+(?:-\w+)+|\w+)', data)
 
 if __name__ == "__main__":
   words = GetWordsCount("https://raw.githubusercontent.com/dscape/spell/master/test/resources/big.txt")
+  data = [i for i in words]
+  print(data)
