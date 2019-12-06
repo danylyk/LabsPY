@@ -1,27 +1,40 @@
+import math
+import sys
 import threading
-import urllib.request
-import time
+from urllib.request import Request, urlopen
 
-def download_file (file, name):
-    start = time.perf_counter()
-    print("Downloading "+str(file)+" is started.")
-    data = urllib.request.urlretrieve(file, name)
-    print("Downloading "+str(file)+" is finished with time: "+str(time.perf_counter()-start)+".")
+class Downloader:
+    def __init__ (self, url):
+        self.url = url;
+        self.size = int(urlopen(Request(url)).info()['Content-Length'])
+    
+    def download (self, name, n):
+        with open(name, "w") as f:
+            f.write("\0"*self.size)
+        shift = math.ceil(self.size/n)
+        start = -shift
+        threades = []
+        while True:
+            start += shift
+            end = start+shift
+            if end > self.size: end = self.size
+            t = threading.Thread(target=self.get_content, args=[name, start, end])
+            t.start()
+            threades.append(t)
+            if end == self.size: break
 
-if __name__ == '__main__':
-    files = ["https://images.unsplash.com/photo-1541233349642-6e425fe6190e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80",
-             "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80",
-             "https://images.unsplash.com/photo-1522775559573-2f76d540932b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=675&q=80"]
+        for t in threades:
+            t.join()
 
-    threades = []
-    i = 0
-    for f in files:
-        i += 1
-        t = threading.Thread(target=download_file, args=[f, "file"+str(i)+".jpg"])
-        t.start()
-        threades.append(t)
+    def get_content (self, name, start, end):
+        req = Request(self.url)
+        req.add_header('Range', 'bytes='+str(start)+'-'+str(end))
+        res = urlopen(req).read()
+        with open(name, "rb+") as fw:
+            fw.seek(start,0)
+            fw.write(bytearray(res))
 
-    for t in threades:
-        t.join()
-
-    print("End")
+if __name__ == "__main__":
+    f1 = Downloader("https://images.unsplash.com/photo-1535498730771-e735b998cd64?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80")
+    f1.download("res.jpg", 10)
+    print("Downloaded!")
