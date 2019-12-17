@@ -9,11 +9,12 @@ class RWLock:
         self.writers = threading.Condition(self.monitor)
 
     def read_lock (self):
-        self.monitor.acquire()
-        while self.rw < 0 or self.write_requests:
-            self.readers.wait()
-        self.rw += 1
-        self.monitor.release()        
+        if self.write_requests:
+            self.monitor.acquire()
+            while self.rw < 0 or self.write_requests:
+                self.readers.wait()
+            self.rw += 1
+            self.monitor.release()        
 
     def write_lock (self):
         self.monitor.acquire()
