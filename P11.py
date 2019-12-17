@@ -2,46 +2,30 @@ import threading
 
 class RWLock:
     def __init__(self):
-        self.rw = 0
-        self.write_requests = 0
-        self.monitor = threading.Lock()
-        self.readers = threading.Condition(self.monitor)
-        self.writers = threading.Condition(self.monitor)
+        self.read_requests = 0
+        self.readers = threading.Lock()
+        self.writers = threading.Lock()
 
     def read_lock (self):
-        if self.write_requests:
-            self.monitor.acquire()
-            while self.rw < 0 or self.write_requests:
-                self.readers.wait()
-            self.rw += 1
-            self.monitor.release()        
+        self.readers.acquire()
+        self.read_requests += 1
+        if self.read_requests == 1:
+            self.writers.acquire()
+        self.readers.release()
 
     def write_lock (self):
-        self.monitor.acquire()
-        while self.rw != 0:
-            self.write_requests += 1
-            self.writers.wait()
-            self.write_requests -= 1
-        self.rw = -1
-        self.monitor.release()
+        self.writers.acquire()
 
-    def unlock (self):
-        self.monitor.acquire()
-        if self.rw < 0:
-            self.rw = 0
-        else:
-            self.rw -= 1
-        wake_writers = self.write_requests and self.rw == 0
-        wake_readers = self.write_requests == 0
-        self.monitor.release()
-        if wake_writers:
-            self.writers.acquire()
-            self.writers.notify()
+    def read_unlock (self):
+        assert self.write_requests > 0
+        self.readers.acquire()
+        self.write_requests -= 1
+        if self.write_requests == 0:
             self.writers.release()
-        elif wake_readers:
-            self.readers.acquire()
-            self.readers.notifyAll()
-            self.readers.release()
+        self.readers.release()
+        
+    def write_unlock (self):
+        self.writers.release()
         
 
 class Book:
@@ -51,7 +35,7 @@ class Book:
     def read (self):
         self.rwlock.read_lock()
         print("Reading")
-        self.rwlock.unlock()
+        self.rwlock.read_unlock()
 
     def write (self):
         self.rwlock.write_lock()
@@ -59,7 +43,7 @@ class Book:
         print("Writing.")
         print("Writing..")
         print("Writing...")
-        self.rwlock.unlock()
+        self.rwlock.write_unlock()
 
 if __name__ == "__main__":
     book = Book()
