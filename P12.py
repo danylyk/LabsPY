@@ -51,12 +51,12 @@ class FilesInDirectory:
                 buf = file.read(chunk_size)
             file.close()
             data = hasher.hexdigest()
-            try:
+            if data in self.duplicates:
                 self.duplicates[data].append(self.files_list[i])
                 if len(self.duplicates[data]) == 2: # If file has already existed in dictionary
                     self.duplicates_pos.append(data)
-
-            except: self.duplicates[data] = [self.files_list[i]]
+            else:
+                self.duplicates[data] = [self.files_list[i]]
 
 
 if __name__ == '__main__':
