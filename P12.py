@@ -18,20 +18,21 @@ class FilesInDirectory:
                 self.files_list.append(dir[0]+"/"+i)
 
     def get_duplicates (self, n):
-        shift = math.ceil(len(self.files_list)/n)
-        start = -shift
-        threades = []
+        files_shift = math.ceil(len(self.files_list)/n)
+        files_start = -files_shift
+        threads = []
 
         while True:
-            start += shift
-            end = start+shift
-            if end > len(self.files_list): end = len(self.files_list)
-            t = threading.Thread(target=self.__get_duplicates_proccess, args=[start, end])
+            files_start += files_shift
+            files_end = files_start+files_shift
+            if files_end > len(self.files_list): 
+                files_end = len(self.files_list)
+            t = threading.Thread(target=self.__get_duplicates_proccess, args=[files_start, files_end, 65536])
             t.start()
-            threades.append(t)
-            if end == len(self.files_list): break
+            threads.append(t)
+            if files_end == len(self.files_list): break
 
-        for t in threades:
+        for t in threads:
             t.join()
 
         res = []
@@ -40,19 +41,19 @@ class FilesInDirectory:
 
         return res
 
-    def __get_duplicates_proccess (self, start, end):
-        for i in range(start, end):
-            file = open(self.files_list[i], 'rb')
+    def __get_duplicates_proccess (self, files_start, files_end, chunk_size):
+        for i in range(files_start, files_end):
             hasher = hashlib.md5()
-            buf = file.read(65536)
+            with open(self.files_list[i], 'rb') as file:
+                buf = file.read(chunk_size)
             while len(buf) > 0:
                 hasher.update(buf)
-                buf = file.read(65536)
+                buf = file.read(chunk_size)
             file.close()
             data = hasher.hexdigest()
             try:
                 self.duplicates[data].append(self.files_list[i])
-                if len(self.duplicates[data]) == 2:
+                if len(self.duplicates[data]) == 2: # If file has already existed in dictionary
                     self.duplicates_pos.append(data)
 
             except: self.duplicates[data] = [self.files_list[i]]
