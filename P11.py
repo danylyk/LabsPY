@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import threading
 
 class RWLock:
@@ -27,23 +28,37 @@ class RWLock:
     def write_unlock (self):
         self.writers.release()
         
+    @contextmanager
+    def read_locked(self):
+        try:
+            self.read_lock()
+            yield
+        finally:
+            self.read_unlock()
+
+    @contextmanager
+    def write_locked(self):
+        try:
+            self.write_lock()
+            yield
+        finally:
+            self.write_unlock()
+        
 
 class Book:
     def __init__ (self):
         self.rwlock = RWLock()
 
     def read (self):
-        self.rwlock.read_lock()
-        print("Reading")
-        self.rwlock.read_unlock()
+        with self.rwlock.read_locked():
+            print("Reading")
 
     def write (self):
-        self.rwlock.write_lock()
-        print("Writing")
-        print("Writing.")
-        print("Writing..")
-        print("Writing...")
-        self.rwlock.write_unlock()
+        with self.rwlock.write_locked():
+            print("Writing")
+            print("Writing.")
+            print("Writing..")
+            print("Writing...")
 
 if __name__ == "__main__":
     book = Book()
