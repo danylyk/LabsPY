@@ -3,12 +3,27 @@ import hashlib
 import threading
 import math
 
+class ThreadPool:
+    def __init__ (self):
+        self.threads = []
+        
+    def append (self, func, args):
+        thread = threading.Thread(target=func, args=args)
+        thread.start()
+        self.threads.append(thread)
+        
+    def wait (self):
+        for thread in self.threads:
+            thread.join()
+        
+
 class FilesInDirectory:
     def __init__ (self, dir:str):
         self.dir = dir
         self.duplicates = {}
         self.duplicates_pos = []
         self.files_list = []
+        self.thread_pool = ThreadPool()
 
         self.__files_from_dir()
 
@@ -27,13 +42,10 @@ class FilesInDirectory:
             files_end = files_start+files_shift
             if files_end > len(self.files_list): 
                 files_end = len(self.files_list)
-            t = threading.Thread(target=self.__get_duplicates_proccess, args=[files_start, files_end, 65536])
-            t.start()
-            threads.append(t)
+            self.thread_pool.append(self.__get_duplicates_proccess, [files_start, files_end, 65536])
             if files_end == len(self.files_list): break
 
-        for t in threads:
-            t.join()
+        self.thread_pool.wait()
 
         res = []
         for i in self.duplicates_pos:
@@ -49,7 +61,6 @@ class FilesInDirectory:
             while len(buf) > 0:
                 hasher.update(buf)
                 buf = file.read(chunk_size)
-            file.close()
             data = hasher.hexdigest()
             if data in self.duplicates:
                 self.duplicates[data].append(self.files_list[i])
