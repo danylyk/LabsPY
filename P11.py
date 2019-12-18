@@ -18,10 +18,10 @@ class RWLock:
         self.writers.acquire()
 
     def read_unlock (self):
-        assert self.write_requests > 0
+        assert self.read_requests > 0
         self.readers.acquire()
-        self.write_requests -= 1
-        if self.write_requests == 0:
+        self.read_requests -= 1
+        if self.read_requests == 0:
             self.writers.release()
         self.readers.release()
         
