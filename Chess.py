@@ -8,7 +8,8 @@ import urllib.request
 from bs4 import BeautifulSoup
 
 class EventNotifier:
-    def __init__ (self):
+    def __init__ (self, emails):
+        self.emails = emails
         self.last_updated = ""
         self.domain = "http://chess-results.com/"
         self.data = []
@@ -30,7 +31,6 @@ class EventNotifier:
         self.data_update = False
         with open('data.dv', 'w') as saved_data:
             json.dump(self.data, saved_data)
-        print("Tournament updated - "+self.data[len(self.data)-1]["link"])
 
     def run (self):
         while self.app_run:
@@ -73,9 +73,10 @@ class EventNotifier:
         msg.set_content(message)
         msg['Subject'] = f'Chess updates'
         msg['From'] = "danylyk@python.com"
-        msg['To'] = "webdvitaly@gmail.com"
-        s = smtplib.SMTP('localhost', 1025)
-        s.send_message(msg)
+        for email in self.emails:
+            msg['To'] = email
+            s = smtplib.SMTP('localhost', 1025)
+            s.send_message(msg)
         s.quit()
     
     def tournament_update (self, link, title):
@@ -105,7 +106,3 @@ class EventNotifier:
                 elif len(participant) > 2:
                     team[1] = participant[2].text
         self.check_tournament(link, title, [tours, team])
-
-if __name__ == "__main__":
-    notifier = EventNotifier()
-    notifier.run()
